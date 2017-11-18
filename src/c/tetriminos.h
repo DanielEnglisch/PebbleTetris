@@ -1,9 +1,17 @@
 #ifndef TETRIMINOS_H
 #define TETRIMINOS_H
 
+// Number of cols/rows
+#define NUM_ROW_COL 4
+// Size per block
+#define TERM_ARR_SIZE NUM_ROW_COL*NUM_ROW_COL
+// Number of orientations
+#define TERM_NUM_ORIENT 4
+
+
 int num_tetriminos = 7;
 
-int shape_l[4][16] = {
+int shape_l[TERM_NUM_ORIENT][TERM_ARR_SIZE] = {
 		{1, 1, 1, 0,
 		 0, 0, 1, 0,
 		 0, 0, 0, 0,
@@ -21,7 +29,7 @@ int shape_l[4][16] = {
 		 1, 0, 0, 0,
 		 0, 0, 0, 0}};
 
-int shape_i[4][16] = {
+int shape_i[TERM_NUM_ORIENT][TERM_ARR_SIZE] = {
 		{1, 1, 1, 1,
 		 0, 0, 0, 0,
 		 0, 0, 0, 0,
@@ -39,7 +47,7 @@ int shape_i[4][16] = {
 		 1, 0, 0, 0,
 		 1, 0, 0, 0}};
 
-int shape_l_inv[4][16] = {
+int shape_l_inv[TERM_NUM_ORIENT][TERM_ARR_SIZE] = {
 		{1, 1, 1, 0,
 		 1, 0, 0, 0,
 		 0, 0, 0, 0,
@@ -57,7 +65,7 @@ int shape_l_inv[4][16] = {
 		 1, 1, 0, 0,
 		 0, 0, 0, 0}};
 
-int shape_q[4][16] = {
+int shape_q[TERM_NUM_ORIENT][TERM_ARR_SIZE] = {
 		{1, 1, 0, 0,
 		 1, 1, 0, 0,
 		 0, 0, 0, 0,
@@ -75,7 +83,7 @@ int shape_q[4][16] = {
 		 0, 0, 0, 0,
 		 0, 0, 0, 0}};
 
-int shape_sn[4][16] = {
+int shape_sn[TERM_NUM_ORIENT][TERM_ARR_SIZE] = {
 		{0, 1, 1, 0,
 		 1, 1, 0, 0,
 		 0, 0, 0, 0,
@@ -93,7 +101,7 @@ int shape_sn[4][16] = {
 		 0, 1, 0, 0,
 		 0, 0, 0, 0}};
 
-int shape_sn_inv[4][16] = {
+int shape_sn_inv[TERM_NUM_ORIENT][TERM_ARR_SIZE] = {
 		{1, 1, 0, 0,
 		 0, 1, 1, 0,
 		 0, 0, 0, 0,
@@ -111,7 +119,7 @@ int shape_sn_inv[4][16] = {
 		 1, 0, 0, 0,
 		 0, 0, 0, 0}};
 		 
-int shape_tee[4][16] = {
+int shape_tee[TERM_NUM_ORIENT][TERM_ARR_SIZE] = {
 		{1, 1, 1, 0,
 		 0, 1, 0, 0,
 		 0, 0, 0, 0,

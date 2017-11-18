@@ -7,20 +7,21 @@ int16_t const SQUARE_SIZE = 10;      // size of a square on the board [pels]
 int const TEXT_LAYER_HEIGHT = 25;    // [pels]
 uint32_t const TICK_INTERVAL = 600;  // [ms]
 
-int difficulty = 0;
+const int MAX_NUM_BLOCKS = 100;     // Max number of block in pile
 
 int g_n_cols = 0; // number of columns on the board
 int g_n_rows = 0; // number of rows on the board
 
-block *g_p_current_shape = NULL;
 Layer *g_p_layer = NULL;
 TextLayer *g_p_text_layer = NULL;
 AppTimer *g_p_timer = NULL;
 Window *g_p_window = NULL;
 
-block **pile = NULL;
-int num_pile = 0;
-int score = 0;
+block *g_p_current_shape = NULL;  // Currently active block
+block **pile = NULL;              // Pile with static blocks
+int num_pile = 0;                 // Number of static blocks
+int score = 0;                    // Score
+int difficulty = 0;               // Faster tick rate [ms]
 
 int main()
 {
@@ -43,7 +44,8 @@ void app_initialize()
 {
   APP_LOG_DEBUG("initializing app ...");
 
-  pile = (block **)malloc(sizeof(block *) * 100);
+  // Initializing pile
+  pile = (block **)malloc(sizeof(block *) * MAX_NUM_BLOCKS);
 
   WindowHandlers handlers = {
       on_window_load,  // load
@@ -94,10 +96,9 @@ void draw_grid(Layer *const p_layer, GContext *const p_context)
 bool is_end_position_block(block const *const b)
 {
   for (int i = 0; i < b->num_shapes; i++)
-  {
     if (is_end_position(b->shapes[i]))
       return true;
-  }
+  
   return false;
 }
 
@@ -114,10 +115,9 @@ bool is_end_position(shape_t const *const p_shape)
 bool is_game_over(block const *const b)
 {
   for (int i = 0; i < b->num_shapes; i++)
-  {
     if (!is_valid_position(b->shapes[i]))
       return true;
-  }
+  
   return false;
 }
 
@@ -131,9 +131,11 @@ bool is_valid_position(shape_t const *const p_shape)
 
 bool blockIntersectsPileOrInvalidPos(block *b)
 {
+  // For every shape in block
   for (int i = 0; i < b->num_shapes; i++)
   {
     shape_t *s = b->shapes[i];
+    // Check if not outside playfield
     if (!is_valid_position(s))
       return true;
     // Check intersection with other blocks
@@ -141,10 +143,8 @@ bool blockIntersectsPileOrInvalidPos(block *b)
     {
       block *p = pile[j];
       for (int k = 0; k < p->num_shapes; k++)
-      {
         if (shapes_intersect(s, p->shapes[k]))
           return true;
-      }
     }
   }
   return false;
@@ -157,9 +157,7 @@ bool only_try_move_block(block *const b, int const dx, int const dy)
   {
     shape_t tmp = *(b->shapes[i]);
     if (!try_move_shape(&tmp, dx, dy))
-    {
       return false;
-    }
     else
     {
       // Check intersection with other blocks
@@ -167,10 +165,8 @@ bool only_try_move_block(block *const b, int const dx, int const dy)
       {
         block *b = pile[j];
         for (int k = 0; k < b->num_shapes; k++)
-        {
           if (shapes_intersect(&tmp, b->shapes[k]))
             return false;
-        }
       }
     }
   }
@@ -185,9 +181,7 @@ bool try_move_block(block *const b, int const dx, int const dy)
   {
     shape_t tmp = *(b->shapes[i]);
     if (!try_move_shape(&tmp, dx, dy))
-    {
       return false;
-    }
     else
     {
       // Check intersection with other blocks
@@ -195,19 +189,16 @@ bool try_move_block(block *const b, int const dx, int const dy)
       {
         block *b = pile[j];
         for (int k = 0; k < b->num_shapes; k++)
-        {
           if (shapes_intersect(&tmp, b->shapes[k]))
             return false;
-        }
       }
     }
   }
 
   // Actually move
   for (int i = 0; i < b->num_shapes; i++)
-  {
     try_move_shape(b->shapes[i], dx, dy);
-  }
+
   return true;
 }
 
@@ -307,21 +298,15 @@ void on_layer_update(Layer *const p_layer, GContext *const p_context)
   }
 }
 
-void clear()
+void resetGame()
 {
+  // Free Pile
   for (int i = 0; i < num_pile; i++)
-  {
-    block *b = pile[i];
-    for (int k = 0; k < b->num_shapes; k++)
-    {
-      free(b->shapes[k]);
-    }
-    free(b);
-  }
+    freeBlock(pile[i]);
   free(pile);
-  pile = (block **)malloc(sizeof(block *) * 100);
+  
+  pile = (block **)malloc(sizeof(block *) * MAX_NUM_BLOCKS);
   num_pile = 0;
-  layer_mark_dirty(g_p_layer);
   difficulty = 0;
   score = 0;
 }
@@ -356,7 +341,6 @@ void removeShapesInCol(int c)
 
       if (s->box.origin.x + s->box.size.w == c)
       {
-        printf("removev %d-%d\n", s->box.origin.x, s->box.origin.y);
         free(s);
         b->shapes[k] = NULL;
         removedshaped++;
@@ -376,16 +360,7 @@ void removeShapesInCol(int c)
   }
 }
 
-void tryMoveAllShapes()
-{
-  for (int i = 0; i < num_pile; i++)
-  {
-    block *b = pile[i];
-    try_move_block(b, 1, 0);
-  }
-}
-
-void checkCutter()
+void checkIfFullCol()
 {
 
   for (int c = 0; c < g_n_cols; c++)
@@ -424,7 +399,7 @@ void on_timer_tick(void *const p_data)
     layer_mark_dirty(g_p_layer);
     if (!only_try_move_block(g_p_current_shape, 1, 0))
     {
-      clear();
+      resetGame();
       text_layer_set_text(g_p_text_layer, "GAME OVER");
     }
     layer_mark_dirty(g_p_layer);
@@ -442,7 +417,7 @@ void on_timer_tick(void *const p_data)
     pile[num_pile++] = g_p_current_shape;
     g_p_current_shape = NULL;
 
-    checkCutter();
+    checkIfFullCol();
     
     if(difficulty < 300)
       difficulty+=10;

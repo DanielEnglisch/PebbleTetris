@@ -1,21 +1,20 @@
 #include "block.h"
 #include "tetriminos.h"
 
+// To know which type was lastly generated
 int type = 0;
 
 void draw_block(int const size, block const *const b, Layer *const p_layer, GContext *const p_context)
 {
   for (int i = 0; i < b->num_shapes; i++)
-  {
     draw_shape(size, b->shapes[i], p_layer, p_context);
-  }
 }
 
-int *getRandomBlock()
+// Returns int array of randonly chosen block
+int* getRandomBlock()
 {
   int const c = random(num_tetriminos + 1);
 
-  printf("Chose block %d", c);
   switch (c)
   {
   case 1:
@@ -53,13 +52,13 @@ int *getRandomBlock()
 
 void rotateBlock(block *b)
 {
+  // Only 4 possible orientations
   if (b->rotation == 3)
-  {
     b->rotation = 0;
-  }
   else
     b->rotation++;
 
+  // Save constant block data
   int xOffset = b->shapes[0]->box.origin.x;
   int yOffset = b->shapes[0]->box.origin.y;
   GColor fill = b->shapes[0]->color_fill;
@@ -67,19 +66,19 @@ void rotateBlock(block *b)
 
   // Free old shape
   for (int i = 0; i < b->num_shapes; i++)
-  {
     free(b->shapes[i]);
-  }
   free(b->shapes);
 
   // Generate new shape based on rotaiton and type
+  // Count number of 1s in array
   int num_shapes = 0;
-  for (int i = 0; i < 16; i++)
+  for (int i = 0; i < TERM_ARR_SIZE; i++)
   {
     if (shape_l[b->rotation][i] == 1)
       num_shapes++;
   }
-
+  
+  // Get new orientation of current type
   int *myType = NULL;
   switch (b->type)
   {
@@ -106,13 +105,14 @@ void rotateBlock(block *b)
     break;
   }
 
+  // Create and populate shape array
   shape_t **shapearr = (shape_t **)malloc(sizeof(shape_t *) * num_shapes);
   int arr_ind = 0;
-  for (int y = 0; y < 4; y++)
+  for (int y = 0; y < NUM_ROW_COL; y++)
   {
-    for (int x = 0; x < 4; x++)
+    for (int x = 0; x < NUM_ROW_COL; x++)
     {
-      if (myType[y * 4 + x] == 1)
+      if (myType[y * NUM_ROW_COL + x] == 1)
       {
         shape_t *newShape = (shape_t *)malloc(sizeof(shape_t));
         newShape->color_fill = fill;
@@ -122,7 +122,8 @@ void rotateBlock(block *b)
       }
     }
   }
-
+  
+  // Adjust numbers
   b->num_shapes = num_shapes;
   b->shapes = shapearr;
 }
@@ -132,26 +133,26 @@ block *make_random_block(int const n, int const min_h, int const max_h)
 
   int *shape = getRandomBlock();
   int num_shapes = 0;
-  for (int i = 0; i < 16; i++)
-  {
+  for (int i = 0; i < TERM_ARR_SIZE; i++)
     if (shape[i] == 1)
       num_shapes++;
-  }
-
+  
+  // Generate random color
   int const r = random(256);
   int const g = random(256);
   int const b = random(256);
 
   int const h = random_range(min_h, max_h);
   int const yOffset = random(n - h);
-
+  
+  // Generate and populate shapearray
   shape_t **shapearr = (shape_t **)malloc(sizeof(shape_t *) * num_shapes);
   int arr_ind = 0;
-  for (int y = 0; y < 4; y++)
+  for (int y = 0; y < NUM_ROW_COL; y++)
   {
-    for (int x = 0; x < 4; x++)
+    for (int x = 0; x < NUM_ROW_COL; x++)
     {
-      if (shape[y * 4 + x] == 1)
+      if (shape[y * NUM_ROW_COL + x] == 1)
       {
         {
           shape_t *newShape = (shape_t *)malloc(sizeof(shape_t));
@@ -194,8 +195,6 @@ block *copyBlock(block *b)
 void freeBlock(block *b)
 {
   for (int k = 0; k < b->num_shapes; k++)
-  {
     free(b->shapes[k]);
-  }
   free(b);
 }

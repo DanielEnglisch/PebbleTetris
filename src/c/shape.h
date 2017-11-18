@@ -17,5 +17,4 @@ bool rect_intersects_rect(GRect const *const p_rect_a, GRect const *const p_rect
 bool point_in_shape(GPoint const *const p_point, shape_t const *const p_shape);
 
 
-
 #endif

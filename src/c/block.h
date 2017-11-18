@@ -3,7 +3,6 @@
 
 #include "shape.h"
 
-// My Methods:
 typedef struct block
 {
   shape_t **shapes;
@@ -18,6 +17,5 @@ void rotateBlock(block *b);
 int *getRandomBlock();
 block *copyBlock(block *b);
 void freeBlock(block *b);
-
 
 #endif
