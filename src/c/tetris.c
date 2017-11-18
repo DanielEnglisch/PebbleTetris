@@ -1,29 +1,4 @@
-#include "./shape.h"
-#include <stdio.h>
-
-void app_cleanup();
-void app_initialize();
-
-void draw_grid(Layer *const p_layer, GContext *const p_context);
-
-bool is_end_position(shape_t const *const p_shape);
-bool is_valid_position(shape_t const *const p_shape);
-bool try_move_shape(shape_t *const p_shape, int const dx, int const dy);
-bool try_move_block(block *const p_shape, int const dx, int const dy);
-
-void click_config_provider(void *const p_context);
-
-void on_key_down_pressed(ClickRecognizerRef recognizer, void *const p_context);
-void on_key_select_pressed(ClickRecognizerRef recognizer, void *const p_context);
-void on_key_up_pressed(ClickRecognizerRef recognizer, void *const p_context);
-void on_key_back_pressed(ClickRecognizerRef recognizer, void *const p_context);
-
-void on_layer_update(Layer *p_layer, GContext *p_context);
-
-void on_timer_tick(void *const p_data);
-
-void on_window_load(Window *const p_window);
-void on_window_unload(Window *const p_window);
+#include "tetris.h"
 
 uint16_t const BUTTON_INTERVAL = 50; // [ms]
 int const SHAPE_MAX_H = 5;           // maximum height of a shape [squares]
@@ -258,33 +233,6 @@ void click_config_provider(void *const p_context)
   window_single_repeating_click_subscribe(BUTTON_ID_SELECT, BUTTON_INTERVAL, on_key_select_pressed);
   window_single_repeating_click_subscribe(BUTTON_ID_UP, BUTTON_INTERVAL, on_key_up_pressed);
   window_single_click_subscribe(BUTTON_ID_BACK, on_key_back_pressed);
-}
-
-block *copyBlock(block *b)
-{
-  block *newBlock = (block *)malloc(sizeof(block));
-  newBlock->num_shapes = b->num_shapes;
-  newBlock->rotation = b->rotation;
-  newBlock->type = b->type;
-  newBlock->shapes = (shape_t **)malloc(sizeof(shape_t *) * b->num_shapes);
-  for (int i = 0; i < b->num_shapes; i++)
-  {
-    shape_t *newShape = (shape_t *)malloc(sizeof(shape_t));
-    newShape->color_fill = b->shapes[i]->color_fill;
-    newShape->color_stroke = b->shapes[i]->color_stroke;
-    newShape->box = b->shapes[i]->box;
-    newBlock->shapes[i] = newShape;
-  }
-  return newBlock;
-}
-
-void freeBlock(block *b)
-{
-  for (int k = 0; k < b->num_shapes; k++)
-  {
-    free(b->shapes[k]);
-  }
-  free(b);
 }
 
 void on_key_back_pressed(ClickRecognizerRef recognizer, void *const p_context)

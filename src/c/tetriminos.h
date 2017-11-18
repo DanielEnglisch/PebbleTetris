@@ -1,3 +1,6 @@
+#ifndef TETRIMINOS_H
+#define TETRIMINOS_H
+
 int num_tetriminos = 7;
 
 int shape_l[4][16] = {
@@ -125,3 +128,4 @@ int shape_tee[4][16] = {
 		 1, 1, 0, 0,
 		 1, 0, 0, 0,
 		 0, 0, 0, 0}};
+#endif
