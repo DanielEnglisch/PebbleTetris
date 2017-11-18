@@ -7,6 +7,8 @@ int16_t const SQUARE_SIZE = 10;      // size of a square on the board [pels]
 int const TEXT_LAYER_HEIGHT = 25;    // [pels]
 uint32_t const TICK_INTERVAL = 600;  // [ms]
 
+int difficulty = 0;
+
 int g_n_cols = 0; // number of columns on the board
 int g_n_rows = 0; // number of rows on the board
 
@@ -320,6 +322,8 @@ void clear()
   pile = (block **)malloc(sizeof(block *) * 100);
   num_pile = 0;
   layer_mark_dirty(g_p_layer);
+  difficulty = 0;
+  score = 0;
 }
 
 bool isColFull(int c)
@@ -403,7 +407,7 @@ void checkCutter()
       }
       
       //Update Score
-      score += 20;
+      score += g_n_cols;
       printf("New Score %d\n", score);
       layer_mark_dirty(g_p_layer);
     }
@@ -412,7 +416,7 @@ void checkCutter()
 
 void on_timer_tick(void *const p_data)
 {
-  g_p_timer = app_timer_register(TICK_INTERVAL, on_timer_tick, NULL);
+  g_p_timer = app_timer_register(TICK_INTERVAL-difficulty, on_timer_tick, NULL);
 
   if (g_p_current_shape == NULL)
   {
@@ -422,7 +426,6 @@ void on_timer_tick(void *const p_data)
     {
       clear();
       text_layer_set_text(g_p_text_layer, "GAME OVER");
-      score = 0;
     }
     layer_mark_dirty(g_p_layer);
   }
@@ -440,6 +443,10 @@ void on_timer_tick(void *const p_data)
     g_p_current_shape = NULL;
 
     checkCutter();
+    
+    if(difficulty < 300)
+      difficulty+=10;
+    
   }
 }
 

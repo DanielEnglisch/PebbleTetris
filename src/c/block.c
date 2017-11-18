@@ -13,8 +13,7 @@ void draw_block(int const size, block const *const b, Layer *const p_layer, GCon
 
 int *getRandomBlock()
 {
-  //int const c = random(num_tetriminos + 1);
-  int const c = 4;
+  int const c = random(num_tetriminos + 1);
 
   printf("Chose block %d", c);
   switch (c)
