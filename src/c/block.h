@@ -12,7 +12,7 @@ typedef struct block
   int type;
 } block;
 
-void draw_block(int const size, block const *const p_shape, Layer *const p_layer, GContext *const p_context);
+void draw_block(int const size, block const *const b, Layer *const p_layer, GContext *const p_context);
 block *make_random_block(int const n, int const min_h, int const max_h);
 void rotateBlock(block *b);
 int *getRandomBlock();

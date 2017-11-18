@@ -89,11 +89,11 @@ void draw_grid(Layer *const p_layer, GContext *const p_context)
   }
 }
 
-bool is_end_position_block(block const *const p_shape)
+bool is_end_position_block(block const *const b)
 {
-  for (int i = 0; i < p_shape->num_shapes; i++)
+  for (int i = 0; i < b->num_shapes; i++)
   {
-    if (is_end_position(p_shape->shapes[i]))
+    if (is_end_position(b->shapes[i]))
       return true;
   }
   return false;
@@ -109,11 +109,11 @@ bool is_end_position(shape_t const *const p_shape)
   return !is_valid_position(&moved_shape);
 }
 
-bool is_game_over(block const *const p_shape)
+bool is_game_over(block const *const b)
 {
-  for (int i = 0; i < p_shape->num_shapes; i++)
+  for (int i = 0; i < b->num_shapes; i++)
   {
-    if (!is_valid_position(p_shape->shapes[i]))
+    if (!is_valid_position(b->shapes[i]))
       return true;
   }
   return false;
@@ -148,12 +148,12 @@ bool blockIntersectsPileOrInvalidPos(block *b)
   return false;
 }
 
-bool only_try_move_block(block *const p_shape, int const dx, int const dy)
+bool only_try_move_block(block *const b, int const dx, int const dy)
 {
   // Try to move copy
-  for (int i = 0; i < p_shape->num_shapes; i++)
+  for (int i = 0; i < b->num_shapes; i++)
   {
-    shape_t tmp = *(p_shape->shapes[i]);
+    shape_t tmp = *(b->shapes[i]);
     if (!try_move_shape(&tmp, dx, dy))
     {
       return false;
@@ -176,12 +176,12 @@ bool only_try_move_block(block *const p_shape, int const dx, int const dy)
   return true;
 }
 
-bool try_move_block(block *const p_shape, int const dx, int const dy)
+bool try_move_block(block *const b, int const dx, int const dy)
 {
   // Try to move copy
-  for (int i = 0; i < p_shape->num_shapes; i++)
+  for (int i = 0; i < b->num_shapes; i++)
   {
-    shape_t tmp = *(p_shape->shapes[i]);
+    shape_t tmp = *(b->shapes[i]);
     if (!try_move_shape(&tmp, dx, dy))
     {
       return false;
@@ -202,9 +202,9 @@ bool try_move_block(block *const p_shape, int const dx, int const dy)
   }
 
   // Actually move
-  for (int i = 0; i < p_shape->num_shapes; i++)
+  for (int i = 0; i < b->num_shapes; i++)
   {
-    try_move_shape(p_shape->shapes[i], dx, dy);
+    try_move_shape(b->shapes[i], dx, dy);
   }
   return true;
 }
@@ -390,6 +390,18 @@ void checkCutter()
     {
       printf("Removin col %d\n", c);
       removeShapesInCol(c);
+      
+      // Move all shapes before c one down
+      for(int i = 0; i < num_pile; i++){
+        block* b = pile[i];
+        for(int k = 0; k < b->num_shapes; k++){
+          shape_t* s = b->shapes[k];
+          if(s->box.origin.x < c){
+            s->box.origin.x++;
+          }
+        }
+      }
+      
       //Update Score
       score += 20;
       printf("New Score %d\n", score);

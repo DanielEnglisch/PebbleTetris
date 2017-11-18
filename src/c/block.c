@@ -3,17 +3,19 @@
 
 int type = 0;
 
-void draw_block(int const size, block const *const p_shape, Layer *const p_layer, GContext *const p_context)
+void draw_block(int const size, block const *const b, Layer *const p_layer, GContext *const p_context)
 {
-  for (int i = 0; i < p_shape->num_shapes; i++)
+  for (int i = 0; i < b->num_shapes; i++)
   {
-    draw_shape(size, p_shape->shapes[i], p_layer, p_context);
+    draw_shape(size, b->shapes[i], p_layer, p_context);
   }
 }
 
 int *getRandomBlock()
 {
-  int const c = random(num_tetriminos + 1);
+  //int const c = random(num_tetriminos + 1);
+  int const c = 4;
+
   printf("Chose block %d", c);
   switch (c)
   {
@@ -129,11 +131,11 @@ void rotateBlock(block *b)
 block *make_random_block(int const n, int const min_h, int const max_h)
 {
 
-  int *shape1 = getRandomBlock();
+  int *shape = getRandomBlock();
   int num_shapes = 0;
   for (int i = 0; i < 16; i++)
   {
-    if (shape1[i] == 1)
+    if (shape[i] == 1)
       num_shapes++;
   }
 
@@ -150,7 +152,7 @@ block *make_random_block(int const n, int const min_h, int const max_h)
   {
     for (int x = 0; x < 4; x++)
     {
-      if (shape1[y * 4 + x] == 1)
+      if (shape[y * 4 + x] == 1)
       {
         {
           shape_t *newShape = (shape_t *)malloc(sizeof(shape_t));
