@@ -176,28 +176,11 @@ bool only_try_move_block(block *const b, int const dx, int const dy)
 
 bool try_move_block(block *const b, int const dx, int const dy)
 {
-  // Try to move copy
-  for (int i = 0; i < b->num_shapes; i++)
-  {
-    shape_t tmp = *(b->shapes[i]);
-    if (!try_move_shape(&tmp, dx, dy))
-      return false;
-    else
-    {
-      // Check intersection with other blocks
-      for (int j = 0; j < num_pile; j++)
-      {
-        block *b = pile[j];
-        for (int k = 0; k < b->num_shapes; k++)
-          if (shapes_intersect(&tmp, b->shapes[k]))
-            return false;
-      }
-    }
-  }
-
-  // Actually move
-  for (int i = 0; i < b->num_shapes; i++)
-    try_move_shape(b->shapes[i], dx, dy);
+   if(only_try_move_block(b,dx,dy)){
+    for (int i = 0; i < b->num_shapes; i++)
+      try_move_shape(b->shapes[i], dx, dy);
+   }else
+     return false;
 
   return true;
 }
@@ -253,35 +236,28 @@ void on_key_back_pressed(ClickRecognizerRef recognizer, void *const p_context)
 
 void on_key_down_pressed(ClickRecognizerRef recognizer, void *const p_context)
 {
-  text_layer_set_text(g_p_text_layer, "key 'down' pressed");
+  text_layer_set_text(g_p_text_layer, "Moving left");
 
   if ((g_p_current_shape != NULL) && try_move_block(g_p_current_shape, 0, 1))
-  {
-
     layer_mark_dirty(g_p_layer);
-  }
+  
 }
 
 void on_key_select_pressed(ClickRecognizerRef recognizer, void *const p_context)
 {
-  text_layer_set_text(g_p_text_layer, "key 'select' pressed");
+  text_layer_set_text(g_p_text_layer, "Drop it");
 
   if ((g_p_current_shape != NULL) && try_move_block(g_p_current_shape, 1, 0))
-  {
-
     layer_mark_dirty(g_p_layer);
-  }
+  
 }
 
 void on_key_up_pressed(ClickRecognizerRef recognizer, void *const p_context)
 {
-  text_layer_set_text(g_p_text_layer, "key 'up' pressed");
+  text_layer_set_text(g_p_text_layer, "Moving right");
 
   if ((g_p_current_shape != NULL) && try_move_block(g_p_current_shape, 0, -1))
-  {
-
     layer_mark_dirty(g_p_layer);
-  }
 }
 
 void on_layer_update(Layer *const p_layer, GContext *const p_context)
@@ -292,9 +268,8 @@ void on_layer_update(Layer *const p_layer, GContext *const p_context)
   {
     draw_block(SQUARE_SIZE, g_p_current_shape, p_layer, p_context);
     for (int i = 0; i < num_pile; i++)
-    {
       draw_block(SQUARE_SIZE, pile[i], p_layer, p_context);
-    }
+    
   }
 }
 
@@ -393,10 +368,12 @@ void on_timer_tick(void *const p_data)
 {
   g_p_timer = app_timer_register(TICK_INTERVAL-difficulty, on_timer_tick, NULL);
 
+  // Create new block
   if (g_p_current_shape == NULL)
   {
     g_p_current_shape = make_random_block(g_n_rows, SHAPE_MIN_H, SHAPE_MAX_H);
     layer_mark_dirty(g_p_layer);
+    // If new block cant be moved -> game over
     if (!only_try_move_block(g_p_current_shape, 1, 0))
     {
       resetGame();
@@ -404,21 +381,25 @@ void on_timer_tick(void *const p_data)
     }
     layer_mark_dirty(g_p_layer);
   }
+  // Move block and display current score
   else if (g_p_current_shape && try_move_block(g_p_current_shape, 1, 0))
   {
-
+    // Display Score
     char *buffer = (char *)malloc(sizeof(char) * 100);
     snprintf(buffer, 100, "Score: %d", score);
     text_layer_set_text(g_p_text_layer, buffer);
     layer_mark_dirty(g_p_layer);
   }
+  // If it can't be moved add to pile
   else
   {
     pile[num_pile++] = g_p_current_shape;
     g_p_current_shape = NULL;
 
+    // Check if a column is full
     checkIfFullCol();
     
+    // Speed increase
     if(difficulty < 300)
       difficulty+=10;
     
